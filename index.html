@@ -1,0 +1,2620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLOCKMEET 2026 — The Crypto Summit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Major+Mono+Display&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #06080c;
+    --bg-2: #0c1118;
+    --bg-3: #131a24;
+    --panel: #0a0f17;
+    --line: #1f2a3a;
+    --line-2: #2a3a52;
+    --ink: #e8eef7;
+    --ink-2: #8a99b3;
+    --muted: #4a5872;
+    --green: #00ff9d;
+    --green-dim: #00b873;
+    --amber: #ffb800;
+    --red: #ff3860;
+    --blue: #4d8eff;
+    --purple: #a86eff;
+    --display: "Major Mono Display", "JetBrains Mono", monospace;
+    --sans: "Space Grotesk", system-ui, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(31, 42, 58, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 42, 58, 0.4) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 1;
+    mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 70%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 70%, transparent 100%);
+  }
+  /* Glow orb */
+  body::after {
+    content: "";
+    position: fixed;
+    top: -20%; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(0, 255, 157, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  ::selection { background: var(--green); color: var(--bg); }
+
+  /* Scanline effect on body */
+  .scanlines {
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      rgba(0, 255, 157, 0.012) 3px,
+      rgba(0, 255, 157, 0.012) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* ─────────── TOP TICKER ─────────── */
+  .ticker {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    height: 32px;
+    overflow: hidden;
+    z-index: 99;
+    font-family: var(--mono);
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-track {
+    display: flex;
+    gap: 40px;
+    padding-left: 100%;
+    animation: scroll-x 60s linear infinite;
+    white-space: nowrap;
+  }
+  @keyframes scroll-x {
+    to { transform: translateX(-100%); }
+  }
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-2);
+  }
+  .ticker-item .sym { color: var(--ink); font-weight: 500; }
+  .ticker-item .up { color: var(--green); }
+  .ticker-item .down { color: var(--red); }
+
+  /* ─────────── NAV ─────────── */
+  .nav {
+    position: fixed;
+    top: 32px; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .logo {
+    font-family: var(--display);
+    font-size: 20px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+  }
+  .logo .blink {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--green);
+    animation: blink 1.5s infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .nav-links a {
+    color: var(--ink-2);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color .2s;
+    position: relative;
+  }
+  .nav-links a:hover { color: var(--green); }
+  .nav-links a::before {
+    content: "//";
+    color: var(--muted);
+    margin-right: 6px;
+  }
+
+  .countdown-mini {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .countdown-mini .num {
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  /* ─────────── PAGE TRANSITIONS ─────────── */
+  .view { display: none; position: relative; z-index: 3; }
+  .view.active {
+    display: block;
+    animation: fadeUp .5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─────────── HERO ─────────── */
+  .hero {
+    padding: 140px 36px 80px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .hero-coords {
+    position: absolute;
+    top: 130px;
+    left: 36px;
+    right: 36px;
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .hero-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    margin-bottom: 30px;
+    width: fit-content;
+  }
+  .hero-status .pulse {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse-ring 1.6s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(0, 255, 157, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
+  }
+
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(48px, 9vw, 144px);
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 30px;
+    text-transform: uppercase;
+  }
+  .hero h1 .glitch {
+    position: relative;
+    display: inline-block;
+    color: var(--green);
+  }
+  .hero h1 .glitch::before,
+  .hero h1 .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0.7;
+  }
+  .hero h1 .glitch::before {
+    color: var(--blue);
+    animation: glitch-1 3s infinite;
+  }
+  .hero h1 .glitch::after {
+    color: var(--red);
+    animation: glitch-2 3s infinite;
+  }
+  @keyframes glitch-1 {
+    0%, 90%, 100% { transform: translate(0); opacity: 0; }
+    92% { transform: translate(-2px, 1px); opacity: 0.7; }
+    94% { transform: translate(2px, -1px); opacity: 0.7; }
+    96% { transform: translate(-1px, 0); opacity: 0.7; }
+  }
+  @keyframes glitch-2 {
+    0%, 90%, 100% { transform: translate(0); opacity: 0; }
+    93% { transform: translate(2px, 1px); opacity: 0.5; }
+    95% { transform: translate(-2px, -1px); opacity: 0.5; }
+    97% { transform: translate(1px, 0); opacity: 0.5; }
+  }
+
+  .hero-subhead {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-2);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+  .hero-subhead strong {
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 50px;
+    max-width: 900px;
+  }
+  .stat-cell {
+    background: var(--panel);
+    padding: 24px 20px;
+  }
+  .stat-cell .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .stat-cell .stat-val {
+    font-family: var(--display);
+    font-size: 32px;
+    color: var(--ink);
+  }
+  .stat-cell .stat-val.green { color: var(--green); }
+
+  .hero-cta-row {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 16px 28px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    transition: all .2s;
+    text-decoration: none;
+    position: relative;
+    border-radius: 4px;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    background: var(--ink);
+    box-shadow: 0 0 0 1px var(--green), 0 0 24px rgba(0, 255, 157, 0.4);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+  }
+  .btn-secondary:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+    padding: 16px 0;
+  }
+  .btn-ghost:hover { color: var(--green); }
+
+  .btn .arrow {
+    width: 14px; height: 14px;
+    transition: transform .25s;
+  }
+  .btn:hover .arrow { transform: translateX(3px); }
+
+  .hero-meta {
+    margin-top: 60px;
+    padding-top: 30px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 60px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .hero-meta strong {
+    color: var(--green);
+    font-weight: 400;
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  /* Stagger */
+  .hero-status { animation: fadeUp .6s .1s both; }
+  .hero h1 { animation: fadeUp .8s .2s both; }
+  .hero-subhead { animation: fadeUp .8s .35s both; }
+  .hero-stats { animation: fadeUp .8s .45s both; }
+  .hero-cta-row { animation: fadeUp .8s .55s both; }
+  .hero-meta { animation: fadeUp .8s .65s both; }
+
+  /* ─────────── COUNTDOWN ─────────── */
+  .countdown {
+    padding: 80px 36px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--panel);
+    text-align: center;
+  }
+  .countdown .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-2);
+    margin-bottom: 30px;
+  }
+  .countdown-grid {
+    display: flex;
+    justify-content: center;
+    gap: 36px;
+    flex-wrap: wrap;
+  }
+  .countdown-cell {
+    text-align: center;
+    min-width: 100px;
+  }
+  .countdown-num {
+    font-family: var(--display);
+    font-size: clamp(60px, 9vw, 120px);
+    color: var(--green);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+  }
+  .countdown-unit {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-2);
+    margin-top: 14px;
+  }
+  .countdown-sep {
+    font-family: var(--display);
+    font-size: clamp(60px, 9vw, 120px);
+    color: var(--muted);
+    line-height: 1;
+  }
+
+  /* ─────────── AGENDA ─────────── */
+  .agenda {
+    padding: 100px 36px;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 50px;
+  }
+  .section-head h2 {
+    font-family: var(--display);
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+  .section-head .head-no {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .agenda-grid {
+    display: grid;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .agenda-row {
+    display: grid;
+    grid-template-columns: 120px 200px 1fr 200px;
+    gap: 0;
+    background: var(--panel);
+    padding: 28px 30px;
+    align-items: center;
+    transition: background .2s;
+    cursor: pointer;
+  }
+  .agenda-row:hover {
+    background: var(--bg-3);
+  }
+  .agenda-time {
+    font-family: var(--display);
+    font-size: 22px;
+    color: var(--green);
+  }
+  .agenda-track {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    border: 1px solid var(--line-2);
+    width: fit-content;
+    border-radius: 3px;
+    color: var(--ink-2);
+  }
+  .agenda-track.keynote { color: var(--green); border-color: var(--green); }
+  .agenda-track.panel { color: var(--blue); border-color: var(--blue); }
+  .agenda-track.workshop { color: var(--amber); border-color: var(--amber); }
+  .agenda-track.party { color: var(--purple); border-color: var(--purple); }
+  .agenda-title {
+    font-family: var(--sans);
+    font-size: 18px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .agenda-speaker {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-top: 4px;
+  }
+  .agenda-stage {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ─────────── SPEAKERS ─────────── */
+  .speakers {
+    padding: 100px 36px;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .speakers-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .speaker {
+    background: var(--bg);
+    padding: 32px 24px;
+    transition: background .25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .speaker:hover { background: var(--bg-3); }
+  .speaker:hover .speaker-avatar { box-shadow: 0 0 0 2px var(--green); }
+  .speaker-avatar {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--bg-3), var(--line-2));
+    border-radius: 50%;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: box-shadow .25s;
+    position: relative;
+  }
+  .speaker-avatar svg { width: 100%; height: 100%; display: block; }
+  .speaker-name {
+    font-family: var(--display);
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .speaker-role {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .speaker-org {
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .speaker-tag {
+    position: absolute;
+    top: 24px; right: 24px;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ─────────── TICKET CTA SECTION ─────────── */
+  .ticket-cta {
+    padding: 120px 36px;
+    text-align: center;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(0, 255, 157, 0.08) 0%, transparent 60%),
+      var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .ticket-cta h2 {
+    font-family: var(--display);
+    font-size: clamp(48px, 8vw, 120px);
+    font-weight: 400;
+    line-height: 0.95;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+  }
+  .ticket-cta h2 .accent { color: var(--green); }
+  .ticket-cta p {
+    color: var(--ink-2);
+    font-family: var(--mono);
+    font-size: 14px;
+    max-width: 560px;
+    margin: 0 auto 30px;
+    line-height: 1.7;
+  }
+
+  .single-ticket {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    padding: 50px 40px;
+    max-width: 540px;
+    margin: 50px auto 0;
+    border-radius: 6px;
+    position: relative;
+    text-align: left;
+  }
+  .single-ticket::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--green), transparent 50%);
+    border-radius: 6px;
+    z-index: -1;
+    opacity: 0.4;
+  }
+  .ticket-tier-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed var(--line-2);
+  }
+  .ticket-tier-name {
+    font-family: var(--display);
+    font-size: 28px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .ticket-tier-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--green);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 6px;
+  }
+  .ticket-availability {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: right;
+  }
+  .ticket-availability strong {
+    display: block;
+    color: var(--ink);
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 4px;
+  }
+
+  .ticket-price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .ticket-price {
+    font-family: var(--display);
+    font-size: 64px;
+    color: var(--green);
+    line-height: 1;
+  }
+  .ticket-price-meta {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+
+  .ticket-includes {
+    list-style: none;
+    margin-bottom: 30px;
+  }
+  .ticket-includes li {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    padding: 7px 0 7px 20px;
+    position: relative;
+  }
+  .ticket-includes li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--green);
+  }
+
+  .progress-bar {
+    height: 4px;
+    background: var(--line);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--green);
+    width: 73%;
+    box-shadow: 0 0 8px var(--green);
+  }
+  .progress-text {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-align: right;
+    margin-bottom: 24px;
+  }
+
+  .ticket-cta-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 20px;
+    font-size: 14px;
+  }
+
+  .one-per-rule {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--amber);
+    background: rgba(255, 184, 0, 0.05);
+    border-radius: 4px;
+    display: flex;
+    gap: 14px;
+    align-items: start;
+  }
+  .one-per-rule svg {
+    flex-shrink: 0;
+    color: var(--amber);
+    margin-top: 2px;
+  }
+  .one-per-rule .rule-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .one-per-rule .rule-text strong {
+    color: var(--amber);
+    font-weight: 400;
+  }
+
+  /* ─────────── BOOKING FLOW ─────────── */
+  .booking-wrap {
+    padding: 130px 36px 100px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .step-bar {
+    display: flex;
+    margin-bottom: 60px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .step {
+    flex: 1;
+    padding: 18px 20px;
+    border-right: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    transition: all .3s;
+  }
+  .step:last-child { border-right: none; }
+  .step.active {
+    background: var(--bg-3);
+    color: var(--green);
+  }
+  .step.done {
+    color: var(--ink-2);
+  }
+  .step.done .step-num {
+    background: var(--green);
+    color: var(--bg);
+    border-color: var(--green);
+  }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+  }
+  .step.active .step-num {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .form-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 50px 50px;
+    border-radius: 6px;
+  }
+  .form-card h2 {
+    font-family: var(--display);
+    font-size: 32px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .form-card .subt {
+    font-family: var(--mono);
+    color: var(--ink-2);
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+
+  .field-group {
+    margin-bottom: 24px;
+  }
+  .field-group .label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .field-group .label .req {
+    color: var(--red);
+    margin-left: 2px;
+  }
+  .field-group input,
+  .field-group select,
+  .field-group textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink);
+    border-radius: 4px;
+    outline: none;
+    transition: all .2s;
+  }
+  .field-group input:focus,
+  .field-group select:focus,
+  .field-group textarea:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+  }
+  .field-group .hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  /* ID Upload */
+  .id-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .id-type {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 18px 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all .2s;
+    text-align: left;
+  }
+  .id-type:hover { border-color: var(--line-2); }
+  .id-type.selected {
+    border-color: var(--green);
+    background: rgba(0, 255, 157, 0.05);
+  }
+  .id-type-icon {
+    width: 28px; height: 28px;
+    margin-bottom: 12px;
+    color: var(--ink-2);
+  }
+  .id-type.selected .id-type-icon { color: var(--green); }
+  .id-type-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .id-type-desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--line-2);
+    border-radius: 6px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s;
+    background: var(--bg);
+  }
+  .upload-zone:hover {
+    border-color: var(--green);
+    background: rgba(0, 255, 157, 0.03);
+  }
+  .upload-zone.has-file {
+    border-style: solid;
+    border-color: var(--green);
+    background: rgba(0, 255, 157, 0.05);
+  }
+  .upload-icon {
+    width: 36px; height: 36px;
+    color: var(--ink-2);
+    margin: 0 auto 14px;
+  }
+  .upload-zone:hover .upload-icon { color: var(--green); }
+  .upload-zone.has-file .upload-icon { color: var(--green); }
+  .upload-text {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .upload-hint {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .upload-zone input { display: none; }
+  .file-info {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: var(--bg-3);
+    border-radius: 4px;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+  .upload-zone.has-file .file-info { display: flex; }
+  .file-info .file-name { color: var(--green); }
+  .file-info .file-size { color: var(--muted); }
+
+  .upload-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .upload-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .verification-notice {
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    padding: 18px 20px;
+    margin-top: 24px;
+    display: flex;
+    gap: 14px;
+    align-items: start;
+  }
+  .verification-notice svg {
+    flex-shrink: 0;
+    color: var(--blue);
+    margin-top: 2px;
+  }
+  .verification-notice .notice-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .verification-notice .notice-body {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 16px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.6;
+  }
+  .checkbox-row input[type="checkbox"] {
+    margin-top: 3px;
+    width: 16px; height: 16px;
+    accent-color: var(--green);
+    cursor: pointer;
+  }
+  .checkbox-row a { color: var(--green); text-decoration: none; }
+  .checkbox-row a:hover { text-decoration: underline; }
+
+  .form-actions {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .price-summary {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 24px;
+    margin-bottom: 30px;
+  }
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .price-row.total {
+    border-top: 1px solid var(--line);
+    margin-top: 14px;
+    padding-top: 18px;
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .price-row.total span:last-child {
+    font-family: var(--display);
+    font-size: 26px;
+    color: var(--green);
+  }
+
+  .pay-method-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .pay-method {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .pay-method:hover { border-color: var(--line-2); }
+  .pay-method.selected {
+    border-color: var(--green);
+    background: rgba(0, 255, 157, 0.05);
+  }
+  .pay-method-icon {
+    width: 32px; height: 32px;
+    color: var(--ink-2);
+    flex-shrink: 0;
+  }
+  .pay-method.selected .pay-method-icon { color: var(--green); }
+  .pay-method-info {
+    flex: 1;
+  }
+  .pay-method-name {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+  }
+  .pay-method-desc {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ─────────── CONFIRMATION ─────────── */
+  .confirm-wrap {
+    padding: 140px 36px 100px;
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .confirm-icon {
+    width: 90px; height: 90px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    margin: 0 auto 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--green);
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+    animation: pop .6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+  .confirm-wrap h1 {
+    font-family: var(--display);
+    font-size: clamp(48px, 7vw, 80px);
+    line-height: 1;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .confirm-wrap h1 .accent { color: var(--green); }
+  .confirm-sub {
+    font-family: var(--mono);
+    color: var(--ink-2);
+    font-size: 14px;
+    margin-bottom: 50px;
+    line-height: 1.7;
+  }
+
+  .digi-ticket {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 0;
+    margin-bottom: 36px;
+    text-align: left;
+    overflow: hidden;
+  }
+  .ticket-header {
+    background: var(--bg-3);
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+  }
+  .ticket-header .tk-brand {
+    font-family: var(--display);
+    font-size: 18px;
+    text-transform: uppercase;
+  }
+  .ticket-header .tk-status {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--green);
+    padding: 4px 10px;
+    border: 1px solid var(--green);
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .ticket-body {
+    padding: 36px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 30px;
+    align-items: center;
+  }
+  .ticket-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 22px 30px;
+  }
+  .ticket-info .ti-cell .ti-l {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+  .ticket-info .ti-cell .ti-v {
+    font-family: var(--display);
+    font-size: 16px;
+    color: var(--ink);
+  }
+  .ticket-info .ti-cell .ti-v.lg {
+    font-size: 22px;
+    color: var(--green);
+  }
+  .qr-box {
+    width: 140px; height: 140px;
+    background: var(--ink);
+    padding: 10px;
+    border-radius: 4px;
+  }
+  .ticket-foot {
+    border-top: 1px dashed var(--line);
+    padding: 16px 28px;
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .ticket-foot .ref { color: var(--green); }
+
+  /* ─────────── FOOTER ─────────── */
+  .footer {
+    background: var(--bg-2);
+    padding: 80px 36px 30px;
+    border-top: 1px solid var(--line);
+    position: relative;
+    z-index: 3;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 40px;
+    padding-bottom: 50px;
+    border-bottom: 1px solid var(--line);
+  }
+  .footer-brand {
+    font-family: var(--display);
+    font-size: 32px;
+    margin-bottom: 14px;
+  }
+  .footer-brand .accent { color: var(--green); }
+  .footer-tag {
+    font-family: var(--mono);
+    color: var(--ink-2);
+    font-size: 12px;
+    line-height: 1.7;
+    max-width: 320px;
+  }
+  .footer h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    margin-bottom: 18px;
+    font-weight: 400;
+  }
+  .footer ul { list-style: none; }
+  .footer ul li { margin-bottom: 10px; }
+  .footer ul a {
+    color: var(--ink-2);
+    text-decoration: none;
+    font-family: var(--mono);
+    font-size: 12px;
+    transition: color .2s;
+  }
+  .footer ul a:hover { color: var(--green); }
+  .footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 24px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+  }
+
+  /* ─────────── ALREADY BOOKED MODAL ─────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 300;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 40px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+  }
+  .modal-icon {
+    width: 60px; height: 60px;
+    border: 2px solid var(--amber);
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--amber);
+  }
+  .modal h3 {
+    font-family: var(--display);
+    font-size: 24px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .modal p {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  /* ─────────── RESPONSIVE ─────────── */
+  @media (max-width: 1024px) {
+    .nav-links { display: none; }
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+    .speakers-grid { grid-template-columns: repeat(2, 1fr); }
+    .agenda-row { grid-template-columns: 100px 1fr; gap: 12px 16px; }
+    .agenda-track, .agenda-stage { grid-column: 2; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .nav { padding: 14px 18px; }
+    .countdown-mini { display: none; }
+    .hero { padding: 110px 20px 60px; }
+    .hero-coords { display: none; }
+    .countdown-grid { gap: 14px; }
+    .countdown-sep { display: none; }
+    .agenda, .speakers, .ticket-cta { padding-left: 20px; padding-right: 20px; }
+    .booking-wrap { padding: 110px 20px 60px; }
+    .form-card { padding: 30px 24px; }
+    .step-bar { display: none; }
+    .field-row, .upload-row { grid-template-columns: 1fr; }
+    .id-type-grid { grid-template-columns: 1fr; }
+    .pay-method-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr; }
+    .ticket-body { grid-template-columns: 1fr; justify-items: center; }
+    .ticket-info { grid-template-columns: 1fr; gap: 16px; }
+    .speakers-grid { grid-template-columns: 1fr; }
+    .hero-meta { grid-template-columns: 1fr; gap: 20px; }
+    .hero-stats { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scanlines"></div>
+
+<!-- ─────────── PRICE TICKER ─────────── -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item"><span class="sym">BTC</span> $98,420 <span class="up">+2.41%</span></span>
+    <span class="ticker-item"><span class="sym">ETH</span> $3,847 <span class="up">+1.82%</span></span>
+    <span class="ticker-item"><span class="sym">SOL</span> $214 <span class="down">-0.74%</span></span>
+    <span class="ticker-item"><span class="sym">BLOCKMEET 2026</span> · MUMBAI · JUNE 14 ·</span>
+    <span class="ticker-item"><span class="sym">BNB</span> $682 <span class="up">+3.11%</span></span>
+    <span class="ticker-item"><span class="sym">ADA</span> $1.24 <span class="down">-1.20%</span></span>
+    <span class="ticker-item"><span class="sym">XRP</span> $2.41 <span class="up">+0.95%</span></span>
+    <span class="ticker-item"><span class="sym">REGISTRATION OPEN</span> · 73% SOLD ·</span>
+    <span class="ticker-item"><span class="sym">DOGE</span> $0.41 <span class="up">+5.21%</span></span>
+    <span class="ticker-item"><span class="sym">AVAX</span> $48.20 <span class="down">-0.42%</span></span>
+    <span class="ticker-item"><span class="sym">BTC</span> $98,420 <span class="up">+2.41%</span></span>
+    <span class="ticker-item"><span class="sym">ETH</span> $3,847 <span class="up">+1.82%</span></span>
+    <span class="ticker-item"><span class="sym">SOL</span> $214 <span class="down">-0.74%</span></span>
+  </div>
+</div>
+
+<!-- ─────────── NAV ─────────── -->
+<nav class="nav" id="nav">
+  <div class="logo" onclick="navigate('home')">
+    <span class="blink"></span>
+    BLOCKMEET<span style="color:var(--green)">/26</span>
+  </div>
+  <ul class="nav-links">
+    <li><a onclick="document.getElementById('agenda').scrollIntoView({behavior:'smooth'})">Agenda</a></li>
+    <li><a onclick="document.getElementById('speakers').scrollIntoView({behavior:'smooth'})">Speakers</a></li>
+    <li><a onclick="document.getElementById('venue').scrollIntoView({behavior:'smooth'})">Venue</a></li>
+    <li><a onclick="document.getElementById('ticket').scrollIntoView({behavior:'smooth'})">Tickets</a></li>
+  </ul>
+  <div class="countdown-mini" id="countdownMini"></div>
+</nav>
+
+<!-- ─────────── HOME / LANDING VIEW ─────────── -->
+<section class="view active" id="view-home">
+  <div class="hero">
+    <div class="hero-coords">
+      <span>LAT 19.0760° N</span>
+      <span>LNG 72.8777° E</span>
+      <span>BLOCK #847,291</span>
+    </div>
+
+    <div class="hero-status">
+      <span class="pulse"></span>
+      REGISTRATION_OPEN · 271/1000 SEATS REMAINING
+    </div>
+
+    <h1>
+      THE FUTURE<br>
+      IS <span class="glitch" data-text="ON-CHAIN.">ON-CHAIN.</span>
+    </h1>
+
+    <p class="hero-subhead">
+      <strong>BlockMeet 2026 is India's most ambitious crypto and Web3 summit.</strong>
+      One day. One stage. 1,000 founders, builders, and traders. Eight hours of unfiltered conversation about where money, ownership, and trust are going next.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat-cell">
+        <div class="stat-label">SPEAKERS</div>
+        <div class="stat-val green">24</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">DEEP TALKS</div>
+        <div class="stat-val">12</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">PROJECTS</div>
+        <div class="stat-val">80+</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-label">ATTENDEES</div>
+        <div class="stat-val">1,000</div>
+      </div>
+    </div>
+
+    <div class="hero-cta-row">
+      <button class="btn btn-primary" onclick="document.getElementById('ticket').scrollIntoView({behavior:'smooth'})">
+        Secure your seat
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+      <button class="btn btn-secondary" onclick="document.getElementById('agenda').scrollIntoView({behavior:'smooth'})">
+        View agenda
+      </button>
+    </div>
+
+    <div class="hero-meta">
+      <div>
+        DATE
+        <strong>14 JUNE 2026</strong>
+      </div>
+      <div>
+        VENUE
+        <strong>JIO WORLD CONVENTION CENTRE</strong>
+      </div>
+      <div>
+        DOORS
+        <strong>09:00 IST</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <section class="countdown">
+    <div class="label">─── EVENT STARTS IN ───</div>
+    <div class="countdown-grid" id="countdown">
+      <div class="countdown-cell"><div class="countdown-num" id="cd-d">00</div><div class="countdown-unit">DAYS</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-cell"><div class="countdown-num" id="cd-h">00</div><div class="countdown-unit">HOURS</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-cell"><div class="countdown-num" id="cd-m">00</div><div class="countdown-unit">MINUTES</div></div>
+      <div class="countdown-sep">:</div>
+      <div class="countdown-cell"><div class="countdown-num" id="cd-s">00</div><div class="countdown-unit">SECONDS</div></div>
+    </div>
+  </section>
+
+  <!-- AGENDA -->
+  <section class="agenda" id="agenda">
+    <div class="section-head">
+      <h2>// AGENDA</h2>
+      <div class="head-no">12 SESSIONS / 1 DAY</div>
+    </div>
+    <div class="agenda-grid">
+      <div class="agenda-row">
+        <div class="agenda-time">09:00</div>
+        <div><div class="agenda-track keynote">KEYNOTE</div></div>
+        <div>
+          <div class="agenda-title">Opening: The State of Web3, 2026</div>
+          <div class="agenda-speaker">CZ — Founder, BNB Chain</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">10:15</div>
+        <div><div class="agenda-track panel">PANEL</div></div>
+        <div>
+          <div class="agenda-title">Bitcoin at $100K: What changed, what didn't</div>
+          <div class="agenda-speaker">Balaji S. · Nischal S. · Sumit Gupta · Moderated by Sandeep N.</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">11:30</div>
+        <div><div class="agenda-track keynote">KEYNOTE</div></div>
+        <div>
+          <div class="agenda-title">Ethereum's roadmap to 100,000 TPS</div>
+          <div class="agenda-speaker">Vitalik Buterin — Co-founder, Ethereum</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">13:00</div>
+        <div><div class="agenda-track workshop">WORKSHOP</div></div>
+        <div>
+          <div class="agenda-title">Building your first DeFi protocol</div>
+          <div class="agenda-speaker">Aave Labs Engineering Team</div>
+        </div>
+        <div class="agenda-stage">STAGE B · LIMITED</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">14:30</div>
+        <div><div class="agenda-track panel">PANEL</div></div>
+        <div>
+          <div class="agenda-title">India's crypto regulation: The path forward</div>
+          <div class="agenda-speaker">RBI · SEBI · MoF representatives in conversation</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">15:45</div>
+        <div><div class="agenda-track keynote">KEYNOTE</div></div>
+        <div>
+          <div class="agenda-title">Stablecoins, RWA, and the new financial rails</div>
+          <div class="agenda-speaker">Jeremy Allaire — CEO, Circle</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">17:00</div>
+        <div><div class="agenda-track panel">PANEL</div></div>
+        <div>
+          <div class="agenda-title">AI × Crypto: The convergence is real</div>
+          <div class="agenda-speaker">Emad Mostaque · Sandeep Nailwal · Illia Polosukhin</div>
+        </div>
+        <div class="agenda-stage">MAIN STAGE</div>
+      </div>
+      <div class="agenda-row">
+        <div class="agenda-time">19:30</div>
+        <div><div class="agenda-track party">AFTERPARTY</div></div>
+        <div>
+          <div class="agenda-title">Token Night · Hosted by Polygon</div>
+          <div class="agenda-speaker">Rooftop · DJ Nucleya · Open bar</div>
+        </div>
+        <div class="agenda-stage">SKY DECK</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPEAKERS -->
+  <section class="speakers" id="speakers">
+    <div class="section-head">
+      <h2>// SPEAKERS</h2>
+      <div class="head-no">24 CONFIRMED</div>
+    </div>
+    <div class="speakers-grid" id="speakersGrid"></div>
+  </section>
+
+  <!-- TICKET CTA -->
+  <section class="ticket-cta" id="ticket">
+    <h2>ONE TICKET.<br>ONE PERSON.<br><span class="accent">ONE DAY.</span></h2>
+    <p>
+      Strict 1-ticket-per-attendee policy. Government-issued ID verification required at booking.
+      Tickets are non-transferable and tied to your identity for security.
+    </p>
+
+    <div class="single-ticket">
+      <div class="ticket-tier-row">
+        <div>
+          <div class="ticket-tier-name">All-Access</div>
+          <div class="ticket-tier-tag">FULL DAY · ALL STAGES · AFTERPARTY</div>
+        </div>
+        <div class="ticket-availability">
+          <strong>271</strong>
+          SEATS LEFT
+        </div>
+      </div>
+
+      <div class="ticket-price-row">
+        <div class="ticket-price">₹4,999</div>
+        <div class="ticket-price-meta">incl. all taxes</div>
+      </div>
+
+      <ul class="ticket-includes">
+        <li>Full-day access to all 12 sessions</li>
+        <li>Workshop seat (limited, first-come)</li>
+        <li>Catered lunch + unlimited coffee</li>
+        <li>Token Night afterparty with open bar</li>
+        <li>Conference swag kit + signed Vitalik book</li>
+        <li>Networking app access (24h before event)</li>
+      </ul>
+
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="progress-text">73% SOLD · 729 / 1000</div>
+
+      <button class="btn btn-primary ticket-cta-btn" onclick="startBooking()">
+        Book my seat
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <div class="one-per-rule">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 9v4M12 17h.01"/>
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+        <div class="rule-text">
+          <strong>One ticket per person, strictly enforced.</strong><br>
+          ID verification at checkout · ID required at venue entry · Non-transferable
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VENUE / FOOTER PRE -->
+  <section class="agenda" id="venue">
+    <div class="section-head">
+      <h2>// VENUE</h2>
+      <div class="head-no">JIO WORLD · BKC · MUMBAI</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+      <div>
+        <h3 style="font-family: var(--display); font-size: 28px; margin-bottom: 20px; text-transform: uppercase;">Jio World Convention Centre</h3>
+        <p style="font-family: var(--mono); font-size: 13px; color: var(--ink-2); line-height: 1.8; margin-bottom: 24px;">
+          India's largest convention centre, in the heart of BKC. State-of-the-art AV, 1,200-seat main auditorium, dedicated workshop wings, and a sky-deck rooftop for the afterparty.
+        </p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-family: var(--mono); font-size: 12px;">
+          <div>
+            <div style="color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.12em; margin-bottom: 4px;">ADDRESS</div>
+            <div style="color: var(--ink-2); line-height: 1.6;">G Block, Bandra Kurla Complex, Mumbai 400051</div>
+          </div>
+          <div>
+            <div style="color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.12em; margin-bottom: 4px;">NEAREST METRO</div>
+            <div style="color: var(--ink-2); line-height: 1.6;">BKC Station · 8 min walk</div>
+          </div>
+          <div>
+            <div style="color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.12em; margin-bottom: 4px;">PARKING</div>
+            <div style="color: var(--ink-2); line-height: 1.6;">800 slots · ₹150/day</div>
+          </div>
+          <div>
+            <div style="color: var(--muted); text-transform: uppercase; font-size: 10px; letter-spacing: 0.12em; margin-bottom: 4px;">CAPACITY</div>
+            <div style="color: var(--ink-2); line-height: 1.6;">1,200 seated · 2,000 standing</div>
+          </div>
+        </div>
+      </div>
+      <div style="background: var(--panel); border: 1px solid var(--line); border-radius: 6px; aspect-ratio: 1; padding: 30px; position: relative; overflow: hidden;">
+        <svg viewBox="0 0 400 400" style="width: 100%; height: 100%;">
+          <defs>
+            <pattern id="venueGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(31,42,58,0.6)" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="400" height="400" fill="url(#venueGrid)"/>
+          <!-- Roads -->
+          <path d="M0 200 L400 200" stroke="rgba(74,88,114,0.4)" stroke-width="14"/>
+          <path d="M200 0 L200 400" stroke="rgba(74,88,114,0.4)" stroke-width="10"/>
+          <!-- Buildings -->
+          <rect x="60" y="60" width="60" height="60" fill="rgba(31,42,58,0.6)" stroke="rgba(74,88,114,0.5)"/>
+          <rect x="280" y="80" width="50" height="80" fill="rgba(31,42,58,0.6)" stroke="rgba(74,88,114,0.5)"/>
+          <rect x="80" y="260" width="80" height="50" fill="rgba(31,42,58,0.6)" stroke="rgba(74,88,114,0.5)"/>
+          <!-- Venue marker -->
+          <rect x="240" y="220" width="100" height="80" fill="#00ff9d" opacity="0.15"/>
+          <rect x="240" y="220" width="100" height="80" fill="none" stroke="#00ff9d" stroke-width="1.5"/>
+          <circle cx="290" cy="260" r="5" fill="#00ff9d"/>
+          <circle cx="290" cy="260" r="14" fill="none" stroke="#00ff9d" stroke-width="1" opacity="0.6">
+            <animate attributeName="r" values="5;30;5" dur="2.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.8;0;0.8" dur="2.5s" repeatCount="indefinite"/>
+          </circle>
+          <text x="290" y="320" fill="#00ff9d" font-family="JetBrains Mono" font-size="10" text-anchor="middle">JIO WORLD</text>
+          <text x="290" y="334" fill="#8a99b3" font-family="JetBrains Mono" font-size="8" text-anchor="middle">19.0596° N · 72.8656° E</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ─────────── BOOKING VIEW (multi-step) ─────────── -->
+<section class="view" id="view-booking"></section>
+
+<!-- ─────────── CONFIRMATION VIEW ─────────── -->
+<section class="view" id="view-confirm"></section>
+
+<!-- ─────────── FOOTER ─────────── -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">BLOCKMEET<span class="accent">/26</span></div>
+      <p class="footer-tag">India's most ambitious Web3 summit. One day, one stage, the people building tomorrow's internet.</p>
+    </div>
+    <div>
+      <h4>EVENT</h4>
+      <ul>
+        <li><a>Agenda</a></li>
+        <li><a>Speakers</a></li>
+        <li><a>Sponsors</a></li>
+        <li><a>Venue</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>SUPPORT</h4>
+      <ul>
+        <li><a>FAQ</a></li>
+        <li><a>Refund policy</a></li>
+        <li><a>Contact</a></li>
+        <li><a>Press kit</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>CONNECT</h4>
+      <ul>
+        <li><a>Twitter / X</a></li>
+        <li><a>Telegram</a></li>
+        <li><a>Discord</a></li>
+        <li><a>LinkedIn</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 BLOCKMEET PTE. LTD.</div>
+    <div>BUILT ON <span style="color:var(--green)">●</span> ETHEREUM</div>
+  </div>
+</footer>
+
+<!-- ─────────── ALREADY BOOKED MODAL ─────────── -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="10"/>
+      </svg>
+    </div>
+    <h3>One Ticket per Person</h3>
+    <p>
+      Our records show this email or ID has already been used to book a ticket for BlockMeet 2026.
+      Each attendee is limited to a single, non-transferable ticket. If you believe this is an error,
+      please contact <span style="color:var(--green)">support@blockmeet.io</span>.
+    </p>
+    <button class="btn btn-secondary" onclick="closeModal()" style="width: 100%; justify-content: center;">
+      Understood
+    </button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SUPABASE CLIENT
+   ============================================================ */
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============================================================
+   COUNTDOWN
+   ============================================================ */
+const eventDate = new Date('2026-06-14T09:00:00+05:30');
+function updateCountdown() {
+  const now = new Date();
+  const diff = Math.max(0, eventDate - now);
+  const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+  const pad = n => String(n).padStart(2, '0');
+  ['cd-d','cd-h','cd-m','cd-s'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = pad([d,h,m,s][i]);
+  });
+  const mini = document.getElementById('countdownMini');
+  if (mini) mini.innerHTML = `<span class="num">${pad(d)}</span>D <span class="num">${pad(h)}</span>H <span class="num">${pad(m)}</span>M <span class="num">${pad(s)}</span>S`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* ============================================================
+   SPEAKERS
+   ============================================================ */
+const speakers = [
+  { name: 'Vitalik Buterin', role: 'CO-FOUNDER', org: 'Ethereum Foundation', tag: 'KEYNOTE', initials: 'VB', accent: '#00ff9d' },
+  { name: 'CZ', role: 'FOUNDER', org: 'BNB Chain', tag: 'KEYNOTE', initials: 'CZ', accent: '#ffb800' },
+  { name: 'Balaji Srinivasan', role: 'AUTHOR', org: 'The Network State', tag: 'PANELIST', initials: 'BS', accent: '#4d8eff' },
+  { name: 'Sandeep Nailwal', role: 'CO-FOUNDER', org: 'Polygon Labs', tag: 'PANELIST', initials: 'SN', accent: '#a86eff' },
+  { name: 'Jeremy Allaire', role: 'CEO', org: 'Circle', tag: 'KEYNOTE', initials: 'JA', accent: '#00ff9d' },
+  { name: 'Nischal Shetty', role: 'FOUNDER', org: 'WazirX · Shardeum', tag: 'PANELIST', initials: 'NS', accent: '#ffb800' },
+  { name: 'Sumit Gupta', role: 'CEO', org: 'CoinDCX', tag: 'PANELIST', initials: 'SG', accent: '#4d8eff' },
+  { name: 'Illia Polosukhin', role: 'CO-FOUNDER', org: 'NEAR Protocol', tag: 'PANELIST', initials: 'IP', accent: '#a86eff' }
+];
+
+function avatarSVG(s) {
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="g${s.initials}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${s.accent}" stop-opacity="0.3"/>
+        <stop offset="100%" stop-color="#0c1118" stop-opacity="1"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" fill="url(#g${s.initials})"/>
+    <circle cx="50" cy="50" r="35" fill="none" stroke="${s.accent}" stroke-width="1" opacity="0.5"/>
+    <text x="50" y="58" text-anchor="middle" fill="${s.accent}" font-family="Major Mono Display" font-size="22">${s.initials}</text>
+  </svg>`;
+}
+
+document.getElementById('speakersGrid').innerHTML = speakers.map(s => `
+  <div class="speaker">
+    <span class="speaker-tag">${s.tag}</span>
+    <div class="speaker-avatar">${avatarSVG(s)}</div>
+    <div class="speaker-name">${s.name}</div>
+    <div class="speaker-role">${s.role}</div>
+    <div class="speaker-org">${s.org}</div>
+  </div>
+`).join('');
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let bookingState = {
+  step: 1,
+  fullName: '', email: '', phone: '', dob: '',
+  idType: 'aadhaar',
+  idNumber: '',
+  idFrontFile: null,
+  idBackFile: null,
+  selfieFile: null,
+  paymentMethod: 'upi',
+  termsAccepted: false,
+  kycAccepted: false
+};
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function navigate(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function startBooking() {
+  bookingState.step = 1;
+  renderBooking();
+  navigate('booking');
+}
+
+/* ============================================================
+   BOOKING FLOW (3 steps)
+   ============================================================ */
+function renderBooking() {
+  const stepBar = `
+    <div class="step-bar">
+      <div class="step ${bookingState.step >= 1 ? (bookingState.step === 1 ? 'active' : 'done') : ''}">
+        <span class="step-num">${bookingState.step > 1 ? '✓' : '1'}</span> ATTENDEE
+      </div>
+      <div class="step ${bookingState.step >= 2 ? (bookingState.step === 2 ? 'active' : 'done') : ''}">
+        <span class="step-num">${bookingState.step > 2 ? '✓' : '2'}</span> ID VERIFICATION
+      </div>
+      <div class="step ${bookingState.step >= 3 ? 'active' : ''}">
+        <span class="step-num">3</span> PAYMENT
+      </div>
+    </div>
+  `;
+
+  let formContent = '';
+
+  if (bookingState.step === 1) {
+    formContent = renderStep1();
+  } else if (bookingState.step === 2) {
+    formContent = renderStep2();
+  } else if (bookingState.step === 3) {
+    formContent = renderStep3();
+  }
+
+  document.getElementById('view-booking').innerHTML = `
+    <div class="booking-wrap">
+      <button class="btn btn-ghost" onclick="navigate('home')" style="padding-bottom:24px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Cancel and exit
+      </button>
+      ${stepBar}
+      <div class="form-card">
+        ${formContent}
+      </div>
+    </div>
+  `;
+  attachStepHandlers();
+}
+
+function renderStep1() {
+  return `
+    <h2>// 01 Attendee Details</h2>
+    <p class="subt">Tell us who's coming. This must match your government ID exactly.</p>
+
+    <div class="field-group">
+      <label class="label">FULL NAME (AS ON ID)<span class="req">*</span></label>
+      <input type="text" id="fullName" placeholder="e.g., Aarav Sharma" value="${bookingState.fullName}"/>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="label">EMAIL<span class="req">*</span></label>
+        <input type="email" id="email" placeholder="you@example.com" value="${bookingState.email}"/>
+        <div class="hint">Tickets are emailed here. Must be unique.</div>
+      </div>
+      <div class="field-group">
+        <label class="label">PHONE<span class="req">*</span></label>
+        <input type="tel" id="phone" placeholder="+91 98765 43210" value="${bookingState.phone}"/>
+        <div class="hint">For OTP at venue entry.</div>
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="label">DATE OF BIRTH<span class="req">*</span></label>
+        <input type="date" id="dob" value="${bookingState.dob}"/>
+        <div class="hint">Must be 18+ to attend.</div>
+      </div>
+      <div class="field-group">
+        <label class="label">PROFESSION (OPTIONAL)</label>
+        <select id="profession">
+          <option value="">Select…</option>
+          <option>Founder / Entrepreneur</option>
+          <option>Developer / Engineer</option>
+          <option>Trader / Investor</option>
+          <option>Researcher / Academic</option>
+          <option>Student</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="navigate('home')">← Back</button>
+      <button class="btn btn-primary" onclick="goStep2()">
+        Continue to verification
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  `;
+}
+
+function renderStep2() {
+  const idLabels = {
+    aadhaar:  { name: 'AADHAAR', front: 'AADHAAR FRONT', back: 'AADHAAR BACK', placeholder: '1234 5678 9012', hint: '12-digit Aadhaar number. Mask first 8 digits if you prefer.' },
+    pan:      { name: 'PAN CARD', front: 'PAN FRONT', back: '', placeholder: 'ABCDE1234F', hint: '10-character PAN number.' },
+    passport: { name: 'PASSPORT', front: 'PASSPORT INFO PAGE', back: '', placeholder: 'A1234567', hint: 'Indian passport number.' },
+    dl:       { name: "DRIVER'S LICENSE", front: 'LICENSE FRONT', back: 'LICENSE BACK', placeholder: 'DL-1234567890123', hint: 'License number including state code.' }
+  };
+  const cur = idLabels[bookingState.idType];
+  const showBack = !!cur.back;
+
+  return `
+    <h2>// 02 ID Verification</h2>
+    <p class="subt">Required for entry. Your data is encrypted, used only for verification, and deleted 30 days after the event.</p>
+
+    <label class="label">SELECT ID TYPE<span class="req">*</span></label>
+    <div class="id-type-grid">
+      <div class="id-type ${bookingState.idType === 'aadhaar' ? 'selected' : ''}" onclick="selectIdType('aadhaar')">
+        <svg class="id-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="6" width="18" height="13" rx="2"/>
+          <path d="M3 10h18M8 14h2M8 16h6"/>
+        </svg>
+        <div class="id-type-name">Aadhaar</div>
+        <div class="id-type-desc">Most common</div>
+      </div>
+      <div class="id-type ${bookingState.idType === 'pan' ? 'selected' : ''}" onclick="selectIdType('pan')">
+        <svg class="id-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="6" width="18" height="13" rx="2"/>
+          <circle cx="9" cy="12" r="2"/>
+          <path d="M14 11h4M14 14h3"/>
+        </svg>
+        <div class="id-type-name">PAN Card</div>
+        <div class="id-type-desc">Tax ID</div>
+      </div>
+      <div class="id-type ${bookingState.idType === 'passport' ? 'selected' : ''}" onclick="selectIdType('passport')">
+        <svg class="id-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="5" y="3" width="14" height="18" rx="1.5"/>
+          <circle cx="12" cy="10" r="2.5"/>
+          <path d="M8 16h8M9 18h6"/>
+        </svg>
+        <div class="id-type-name">Passport</div>
+        <div class="id-type-desc">Indian only</div>
+      </div>
+      <div class="id-type ${bookingState.idType === 'dl' ? 'selected' : ''}" onclick="selectIdType('dl')">
+        <svg class="id-type-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="6" width="18" height="13" rx="2"/>
+          <path d="M8 11h2M8 14h6M14 11h3"/>
+        </svg>
+        <div class="id-type-name">Driving License</div>
+        <div class="id-type-desc">All states</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="label">${cur.name} NUMBER<span class="req">*</span></label>
+      <input type="text" id="idNumber" placeholder="${cur.placeholder}" value="${bookingState.idNumber}"/>
+      <div class="hint">${cur.hint}</div>
+    </div>
+
+    <label class="upload-label" style="margin-top: 8px">UPLOAD DOCUMENT<span class="req" style="color:var(--red)">*</span></label>
+    <div class="upload-row" style="${showBack ? '' : 'grid-template-columns: 1fr;'}">
+      <div>
+        <div class="upload-zone ${bookingState.idFrontFile ? 'has-file' : ''}" id="zoneFront" onclick="document.getElementById('fileFront').click()">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <path d="M17 8l-5-5-5 5"/>
+            <path d="M12 3v12"/>
+          </svg>
+          <div class="upload-text">${cur.front}</div>
+          <div class="upload-hint">PNG / JPG / PDF · Max 5MB</div>
+          <div class="file-info">
+            <span class="file-name" id="frontName">—</span>
+            <span class="file-size" id="frontSize">—</span>
+          </div>
+          <input type="file" id="fileFront" accept="image/*,.pdf" onchange="handleFile(event, 'front')"/>
+        </div>
+      </div>
+      ${showBack ? `
+      <div>
+        <div class="upload-zone ${bookingState.idBackFile ? 'has-file' : ''}" id="zoneBack" onclick="document.getElementById('fileBack').click()">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+            <path d="M17 8l-5-5-5 5"/>
+            <path d="M12 3v12"/>
+          </svg>
+          <div class="upload-text">${cur.back}</div>
+          <div class="upload-hint">PNG / JPG / PDF · Max 5MB</div>
+          <div class="file-info">
+            <span class="file-name" id="backName">—</span>
+            <span class="file-size" id="backSize">—</span>
+          </div>
+          <input type="file" id="fileBack" accept="image/*,.pdf" onchange="handleFile(event, 'back')"/>
+        </div>
+      </div>
+      ` : ''}
+    </div>
+
+    <label class="upload-label" style="margin-top: 8px">SELFIE WITH ID<span class="req" style="color:var(--red)">*</span></label>
+    <div class="upload-zone ${bookingState.selfieFile ? 'has-file' : ''}" id="zoneSelfie" onclick="document.getElementById('fileSelfie').click()">
+      <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+      <div class="upload-text">Selfie holding your ID</div>
+      <div class="upload-hint">PNG / JPG · Both face and ID clearly visible</div>
+      <div class="file-info">
+        <span class="file-name" id="selfieName">—</span>
+        <span class="file-size" id="selfieSize">—</span>
+      </div>
+      <input type="file" id="fileSelfie" accept="image/*" onchange="handleFile(event, 'selfie')"/>
+    </div>
+
+    <div class="verification-notice">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <div>
+        <div class="notice-title">Why we ask for this</div>
+        <div class="notice-body">
+          One ticket per attendee is strictly enforced. Your ID is checked against our system to prevent duplicates and resale.
+          Documents are encrypted at rest, never shared with third parties, and permanently deleted 30 days after the event.
+          On the event day, you'll show this same ID at entry.
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="goStep1()">← Back</button>
+      <button class="btn btn-primary" onclick="goStep3()">
+        Continue to payment
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  `;
+}
+
+function renderStep3() {
+  const subtotal = 4999;
+  const fee = Math.round(subtotal * 0.02);
+  const total = subtotal + fee;
+
+  return `
+    <h2>// 03 Payment</h2>
+    <p class="subt">Final step. Your seat is held for the next 10 minutes.</p>
+
+    <div class="price-summary">
+      <div class="price-row">
+        <span>BlockMeet 2026 · All-Access × 1</span>
+        <span>₹${subtotal.toLocaleString('en-IN')}</span>
+      </div>
+      <div class="price-row">
+        <span>Platform fee (2%)</span>
+        <span>₹${fee.toLocaleString('en-IN')}</span>
+      </div>
+      <div class="price-row">
+        <span>GST</span>
+        <span>Included</span>
+      </div>
+      <div class="price-row total">
+        <span>TOTAL</span>
+        <span>₹${total.toLocaleString('en-IN')}</span>
+      </div>
+    </div>
+
+    <label class="label" style="display:block; margin-bottom: 14px;">CHOOSE PAYMENT METHOD<span class="req">*</span></label>
+    <div class="pay-method-grid">
+      <div class="pay-method ${bookingState.paymentMethod === 'upi' ? 'selected' : ''}" onclick="selectPay('upi')">
+        <svg class="pay-method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="6" width="20" height="13" rx="2"/>
+          <path d="M2 10h20M7 15h2"/>
+        </svg>
+        <div class="pay-method-info">
+          <div class="pay-method-name">UPI</div>
+          <div class="pay-method-desc">GPay · PhonePe · Paytm</div>
+        </div>
+      </div>
+      <div class="pay-method ${bookingState.paymentMethod === 'card' ? 'selected' : ''}" onclick="selectPay('card')">
+        <svg class="pay-method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+        </svg>
+        <div class="pay-method-info">
+          <div class="pay-method-name">Card</div>
+          <div class="pay-method-desc">Credit / Debit · Visa / MC</div>
+        </div>
+      </div>
+      <div class="pay-method ${bookingState.paymentMethod === 'crypto' ? 'selected' : ''}" onclick="selectPay('crypto')">
+        <svg class="pay-method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9 8h6a2 2 0 010 4H9zM9 12h7a2 2 0 010 4H9zM10 6v2M10 16v2M14 6v2M14 16v2"/>
+        </svg>
+        <div class="pay-method-info">
+          <div class="pay-method-name">Crypto</div>
+          <div class="pay-method-desc">USDC · USDT · ETH</div>
+        </div>
+      </div>
+      <div class="pay-method ${bookingState.paymentMethod === 'bank' ? 'selected' : ''}" onclick="selectPay('bank')">
+        <svg class="pay-method-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"/>
+        </svg>
+        <div class="pay-method-info">
+          <div class="pay-method-name">Net Banking</div>
+          <div class="pay-method-desc">All major banks</div>
+        </div>
+      </div>
+    </div>
+
+    ${bookingState.paymentMethod === 'upi' ? `
+      <div class="field-group">
+        <label class="label">UPI ID</label>
+        <input type="text" placeholder="yourname@okaxis"/>
+      </div>
+    ` : bookingState.paymentMethod === 'card' ? `
+      <div class="field-group">
+        <label class="label">CARD NUMBER</label>
+        <input type="text" placeholder="•••• •••• •••• ••••"/>
+      </div>
+      <div class="field-row">
+        <div class="field-group">
+          <label class="label">EXPIRY</label>
+          <input type="text" placeholder="MM / YY"/>
+        </div>
+        <div class="field-group">
+          <label class="label">CVV</label>
+          <input type="text" placeholder="•••"/>
+        </div>
+      </div>
+    ` : bookingState.paymentMethod === 'crypto' ? `
+      <div class="verification-notice" style="border-color: var(--purple);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <div>
+          <div class="notice-title" style="color: var(--purple)">PAY WITH CRYPTO</div>
+          <div class="notice-body">A wallet connection prompt will appear after you confirm. Supported: USDC, USDT, ETH on mainnet.</div>
+        </div>
+      </div>
+    ` : `
+      <div class="field-group">
+        <label class="label">SELECT BANK</label>
+        <select>
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>State Bank of India</option>
+          <option>Axis Bank</option>
+          <option>Kotak Mahindra Bank</option>
+        </select>
+      </div>
+    `}
+
+    <div style="margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line);">
+      <div class="checkbox-row">
+        <input type="checkbox" id="terms" ${bookingState.termsAccepted ? 'checked' : ''}/>
+        <label for="terms">I agree to the <a>terms of service</a>, <a>refund policy</a>, and <a>code of conduct</a>.</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="kyc" ${bookingState.kycAccepted ? 'checked' : ''}/>
+        <label for="kyc">I confirm that the ID submitted is mine, the information is accurate, and I understand this ticket is non-transferable. Misuse may result in cancellation without refund.</label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="goStep2()">← Back</button>
+      <button class="btn btn-primary" onclick="completeBooking()">
+        Pay ₹${total.toLocaleString('en-IN')} & confirm seat
+        <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 12h14M13 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  `;
+}
+
+/* ============================================================
+   STEP HANDLERS
+   ============================================================ */
+function attachStepHandlers() {
+  // No-op; we read values on submit
+}
+
+function selectIdType(type) {
+  bookingState.idType = type;
+  bookingState.idNumber = '';
+  bookingState.idFrontFile = null;
+  bookingState.idBackFile = null;
+  renderBooking();
+}
+
+function selectPay(method) {
+  bookingState.paymentMethod = method;
+  renderBooking();
+}
+
+function handleFile(e, side) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('File too large. Max 5MB.');
+    return;
+  }
+  const sizeKB = (file.size / 1024).toFixed(0);
+  const sizeStr = sizeKB > 1024 ? (file.size / 1024 / 1024).toFixed(2) + ' MB' : sizeKB + ' KB';
+
+  if (side === 'front') {
+    bookingState.idFrontFile = file;
+    document.getElementById('zoneFront').classList.add('has-file');
+    document.getElementById('frontName').textContent = file.name;
+    document.getElementById('frontSize').textContent = sizeStr;
+  } else if (side === 'back') {
+    bookingState.idBackFile = file;
+    document.getElementById('zoneBack').classList.add('has-file');
+    document.getElementById('backName').textContent = file.name;
+    document.getElementById('backSize').textContent = sizeStr;
+  } else if (side === 'selfie') {
+    bookingState.selfieFile = file;
+    document.getElementById('zoneSelfie').classList.add('has-file');
+    document.getElementById('selfieName').textContent = file.name;
+    document.getElementById('selfieSize').textContent = sizeStr;
+  }
+}
+
+function goStep1() { bookingState.step = 1; renderBooking(); }
+
+function goStep2() {
+  // gather step 1
+  const fullName = document.getElementById('fullName').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const dob = document.getElementById('dob').value;
+
+  if (!fullName || fullName.length < 3) return alert('Please enter your full legal name.');
+  if (!email || !email.includes('@')) return alert('Please enter a valid email address.');
+  if (!phone || phone.length < 10) return alert('Please enter a valid phone number.');
+  if (!dob) return alert('Please enter your date of birth.');
+
+  // Check 18+
+  const age = (new Date() - new Date(dob)) / (1000 * 60 * 60 * 24 * 365.25);
+  if (age < 18) return alert('You must be 18 or older to attend BlockMeet 2026.');
+
+  // Real duplicate check via Supabase
+  checkDuplicateAndProceed(fullName, email, phone, dob);
+}
+
+async function checkDuplicateAndProceed(fullName, email, phone, dob) {
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('email, phone')
+      .or(`email.eq.${email.toLowerCase()},phone.eq.${phone}`)
+      .limit(1);
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      document.getElementById('modal').classList.add('show');
+      return;
+    }
+
+    bookingState.fullName = fullName;
+    bookingState.email = email.toLowerCase();
+    bookingState.phone = phone;
+    bookingState.dob = dob;
+    bookingState.step = 2;
+    renderBooking();
+  } catch (err) {
+    console.error('Duplicate check failed:', err);
+    alert('Could not verify availability. Please check your connection and try again.');
+  }
+}
+
+function goStep3() {
+  const idNumber = document.getElementById('idNumber').value.trim();
+  if (!idNumber || idNumber.length < 5) return alert('Please enter your ID number.');
+  if (!bookingState.idFrontFile) return alert('Please upload the front of your ID document.');
+  // some IDs don't need a back
+  const needsBack = ['aadhaar', 'dl'].includes(bookingState.idType);
+  if (needsBack && !bookingState.idBackFile) return alert('Please upload the back of your ID document.');
+  if (!bookingState.selfieFile) return alert('Please upload a selfie holding your ID.');
+
+  bookingState.idNumber = idNumber;
+  bookingState.step = 3;
+  renderBooking();
+}
+
+async function completeBooking() {
+  const terms = document.getElementById('terms').checked;
+  const kyc = document.getElementById('kyc').checked;
+  if (!terms) return alert('Please accept the terms of service.');
+  if (!kyc) return alert('Please confirm your ID information.');
+
+  bookingState.termsAccepted = terms;
+  bookingState.kycAccepted = kyc;
+
+  // Disable button + show loading state
+  const btn = event.target.closest('button');
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  btn.innerHTML = 'Processing... please wait';
+
+  try {
+    // 1. Generate booking ref + seat
+    const orderRef = 'BLM-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Date.now().toString().slice(-4);
+    const seatNum = 'A' + Math.floor(Math.random() * 800 + 100);
+
+    // 2. Upload ID files to storage
+    const uploadFile = async (file, type) => {
+      if (!file) return null;
+      const ext = file.name.split('.').pop();
+      const path = `${orderRef}/${type}.${ext}`;
+      const { data, error } = await sb.storage
+        .from('id-documents')
+        .upload(path, file);
+      if (error) throw new Error(`Upload failed (${type}): ${error.message}`);
+      return path;
+    };
+
+    const idFrontUrl = await uploadFile(bookingState.idFrontFile, 'id-front');
+    const idBackUrl = await uploadFile(bookingState.idBackFile, 'id-back');
+    const selfieUrl = await uploadFile(bookingState.selfieFile, 'selfie');
+
+    // 3. Insert booking row
+    const { data, error } = await sb
+      .from('bookings')
+      .insert({
+        booking_ref: orderRef,
+        full_name: bookingState.fullName,
+        email: bookingState.email,
+        phone: bookingState.phone,
+        dob: bookingState.dob,
+        id_type: bookingState.idType,
+        id_number: bookingState.idNumber,
+        id_front_url: idFrontUrl,
+        id_back_url: idBackUrl,
+        selfie_url: selfieUrl,
+        payment_method: bookingState.paymentMethod,
+        amount: 5099,
+        seat_number: seatNum,
+        status: 'pending_verification'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      // Unique constraint violation = duplicate
+      if (error.code === '23505') {
+        if (error.message.includes('id_number')) {
+          alert('This ID number is already registered for an attendee. One ticket per person.');
+        } else if (error.message.includes('email')) {
+          alert('This email is already registered.');
+        } else if (error.message.includes('phone')) {
+          alert('This phone number is already registered.');
+        } else {
+          document.getElementById('modal').classList.add('show');
+        }
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.innerHTML = originalHTML;
+        return;
+      }
+      throw error;
+    }
+
+    // 4. Stash for confirmation page
+    bookingState.confirmedRef = data.booking_ref;
+    bookingState.confirmedSeat = data.seat_number;
+
+    renderConfirm();
+    navigate('confirm');
+
+  } catch (err) {
+    console.error('Booking failed:', err);
+    alert('Booking failed: ' + err.message + '\n\nPlease try again or contact support.');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerHTML = originalHTML;
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+/* ============================================================
+   QR CODE (simple matrix simulation)
+   ============================================================ */
+function generateQR(data) {
+  const size = 21; // 21x21 grid
+  // Deterministic pseudo-random pattern from data
+  let seed = 0;
+  for (let i = 0; i < data.length; i++) seed = (seed * 31 + data.charCodeAt(i)) | 0;
+  function rand() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+
+  let cells = '';
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      // Position markers (corners)
+      const isCorner = (x < 7 && y < 7) || (x >= size - 7 && y < 7) || (x < 7 && y >= size - 7);
+      let fill = false;
+      if (isCorner) {
+        const cx = x < 7 ? x : x - (size - 7);
+        const cy = y < 7 ? y : y - (size - 7);
+        fill = (cx === 0 || cx === 6 || cy === 0 || cy === 6) ||
+               (cx >= 2 && cx <= 4 && cy >= 2 && cy <= 4);
+      } else {
+        fill = rand() > 0.55;
+      }
+      if (fill) {
+        cells += `<rect x="${x*5}" y="${y*5}" width="5" height="5" fill="#06080c"/>`;
+      }
+    }
+  }
+  return `<svg viewBox="0 0 ${size*5} ${size*5}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+    <rect width="${size*5}" height="${size*5}" fill="#e8eef7"/>
+    ${cells}
+  </svg>`;
+}
+
+/* ============================================================
+   CONFIRMATION
+   ============================================================ */
+function renderConfirm() {
+  const orderRef = bookingState.confirmedRef || ('BLM-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+  const seatNum = bookingState.confirmedSeat || ('A' + Math.floor(Math.random() * 800 + 100));
+
+  document.getElementById('view-confirm').innerHTML = `
+    <div class="confirm-wrap">
+      <div class="confirm-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h1>SEAT <span class="accent">CONFIRMED</span></h1>
+      <p class="confirm-sub">
+        Your seat at BlockMeet 2026 is locked in.<br>
+        E-ticket sent to <span style="color:var(--green)">${bookingState.email}</span><br>
+        ID verification will be reviewed within 24 hours.
+      </p>
+
+      <div class="digi-ticket">
+        <div class="ticket-header">
+          <div class="tk-brand">BLOCKMEET<span style="color:var(--green)">/26</span></div>
+          <div class="tk-status">● VERIFIED</div>
+        </div>
+        <div class="ticket-body">
+          <div class="ticket-info">
+            <div class="ti-cell">
+              <div class="ti-l">ATTENDEE</div>
+              <div class="ti-v lg">${bookingState.fullName}</div>
+            </div>
+            <div class="ti-cell">
+              <div class="ti-l">SEAT</div>
+              <div class="ti-v lg">${seatNum}</div>
+            </div>
+            <div class="ti-cell">
+              <div class="ti-l">DATE</div>
+              <div class="ti-v">14 JUN 2026</div>
+            </div>
+            <div class="ti-cell">
+              <div class="ti-l">DOORS</div>
+              <div class="ti-v">09:00 IST</div>
+            </div>
+            <div class="ti-cell">
+              <div class="ti-l">VENUE</div>
+              <div class="ti-v">JIO WORLD · BKC</div>
+            </div>
+            <div class="ti-cell">
+              <div class="ti-l">TIER</div>
+              <div class="ti-v">ALL-ACCESS</div>
+            </div>
+          </div>
+          <div class="qr-box">${generateQR(orderRef + bookingState.email)}</div>
+        </div>
+        <div class="ticket-foot">
+          <div>BOOKING REF · <span class="ref">${orderRef}</span></div>
+          <div>NON-TRANSFERABLE · ID REQUIRED AT ENTRY</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn btn-primary">
+          Download ticket (PDF)
+          <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+          </svg>
+        </button>
+        <button class="btn btn-secondary" onclick="navigate('home')">
+          Back to event
+        </button>
+      </div>
+
+      <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid var(--line); text-align: left; font-family: var(--mono); font-size: 11px; color: var(--ink-2); line-height: 1.8;">
+        <div style="color: var(--green); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.12em;">// WHAT HAPPENS NEXT</div>
+        <div>01 · We'll review your ID within 24 hours</div>
+        <div>02 · You'll get an email confirmation once verified</div>
+        <div>03 · 1 day before the event, the networking app unlocks</div>
+        <div>04 · On 14 June, bring the same ID + this QR to the venue</div>
+      </div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLOCKMEET/26 — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Major+Mono+Display&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #06080c;
+    --bg-2: #0c1118;
+    --bg-3: #131a24;
+    --panel: #0a0f17;
+    --line: #1f2a3a;
+    --line-2: #2a3a52;
+    --ink: #e8eef7;
+    --ink-2: #8a99b3;
+    --muted: #4a5872;
+    --green: #00ff9d;
+    --green-dim: #00b873;
+    --amber: #ffb800;
+    --red: #ff3860;
+    --blue: #4d8eff;
+    --purple: #a86eff;
+    --display: "Major Mono Display", monospace;
+    --sans: "Space Grotesk", system-ui, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(31, 42, 58, 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 42, 58, 0.35) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at top, rgba(0,0,0,0.6) 0%, transparent 80%);
+  }
+
+  ::selection { background: var(--green); color: var(--bg); }
+
+  /* ═══════════ LOGIN SCREEN ═══════════ */
+  .login-screen {
+    position: fixed; inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .login-card {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    padding: 50px 44px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+  }
+  .login-card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--green) 0%, transparent 50%);
+    border-radius: 6px;
+    z-index: -1;
+    opacity: 0.5;
+  }
+  .login-brand {
+    font-family: var(--display);
+    font-size: 24px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .login-brand .blink {
+    width: 8px; height: 8px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--green);
+    animation: blink 1.5s infinite;
+  }
+  .login-brand .accent { color: var(--green); }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .login-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 36px;
+  }
+  .login-card h2 {
+    font-family: var(--display);
+    font-size: 32px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+  .field label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    margin-bottom: 8px;
+  }
+  .field input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    border-radius: 4px;
+    outline: none;
+    transition: all .2s;
+  }
+  .field input:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1);
+  }
+
+  .btn {
+    border: none;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+    padding: 14px 22px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all .2s;
+  }
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+  }
+  .btn-primary:hover {
+    background: var(--ink);
+    box-shadow: 0 0 0 1px var(--green), 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+  }
+  .btn-secondary:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .btn-danger {
+    background: var(--red);
+    color: var(--ink);
+  }
+  .btn-danger:hover {
+    background: #d92e51;
+  }
+  .btn-success {
+    background: var(--green);
+    color: var(--bg);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-2);
+  }
+  .btn-ghost:hover { color: var(--green); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-full { width: 100%; }
+
+  .login-error {
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 11px;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 56, 96, 0.1);
+    border: 1px solid var(--red);
+    border-radius: 3px;
+    display: none;
+  }
+  .login-error.show { display: block; }
+
+  .login-hint {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ═══════════ DASHBOARD LAYOUT ═══════════ */
+  .dash {
+    display: none;
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+  }
+  .dash.show { display: block; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    background: rgba(6, 8, 12, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+  .top-brand {
+    font-family: var(--display);
+    font-size: 18px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .top-brand .accent { color: var(--green); }
+  .top-brand .blink {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--green);
+    animation: blink 1.5s infinite;
+  }
+  .top-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--amber);
+    padding: 4px 10px;
+    border: 1px solid var(--amber);
+    border-radius: 3px;
+  }
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .topbar-right .user-email {
+    color: var(--green);
+  }
+
+  .main {
+    padding: 36px 32px 80px;
+  }
+
+  /* ═══════════ STATS ═══════════ */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 36px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .stat {
+    background: var(--panel);
+    padding: 26px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .stat-icon {
+    width: 14px; height: 14px;
+    color: var(--ink-2);
+  }
+  .stat-val {
+    font-family: var(--display);
+    font-size: 42px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-val.green { color: var(--green); }
+  .stat-val.amber { color: var(--amber); }
+  .stat-val.red { color: var(--red); }
+  .stat-val.blue { color: var(--blue); }
+  .stat-sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-2);
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ═══════════ TOOLBAR ═══════════ */
+  .toolbar {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px 6px 0 0;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: none;
+  }
+  .filter-tabs {
+    display: flex;
+    gap: 6px;
+  }
+  .tab {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tab:hover { border-color: var(--line-2); color: var(--ink); }
+  .tab.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  .tab .count {
+    background: rgba(0,0,0,0.15);
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+  .tab.active .count {
+    background: var(--green);
+    color: var(--bg);
+  }
+
+  .toolbar-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .search {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 9px 14px;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    width: 240px;
+    outline: none;
+    transition: all .2s;
+  }
+  .search:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 2px rgba(0, 255, 157, 0.1);
+  }
+
+  /* ═══════════ TABLE ═══════════ */
+  .table-wrap {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 0 0 6px 6px;
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead {
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    text-align: left;
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 400;
+    white-space: nowrap;
+  }
+  td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--sans);
+    color: var(--ink);
+    vertical-align: middle;
+  }
+  tbody tr {
+    cursor: pointer;
+    transition: background .15s;
+  }
+  tbody tr:hover {
+    background: var(--bg-3);
+  }
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .ref-cell {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+  }
+  .name-cell .nm-name {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .name-cell .nm-email {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-top: 2px;
+  }
+  .id-cell {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .id-cell .id-type {
+    text-transform: uppercase;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    margin-bottom: 2px;
+  }
+  .date-cell {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .date-cell .date-time {
+    color: var(--muted);
+    font-size: 10px;
+    margin-top: 2px;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .status-pill.pending {
+    color: var(--amber);
+    border: 1px solid var(--amber);
+    background: rgba(255, 184, 0, 0.08);
+  }
+  .status-pill.verified {
+    color: var(--green);
+    border: 1px solid var(--green);
+    background: rgba(0, 255, 157, 0.08);
+  }
+  .status-pill.rejected {
+    color: var(--red);
+    border: 1px solid var(--red);
+    background: rgba(255, 56, 96, 0.08);
+  }
+  .status-pill::before {
+    content: "●";
+    font-size: 8px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 100px 20px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .empty-state svg {
+    width: 48px; height: 48px;
+    color: var(--line-2);
+    margin: 0 auto 20px;
+    display: block;
+  }
+
+  /* ═══════════ DETAIL MODAL ═══════════ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 200;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 50px 20px;
+    overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 980px;
+    overflow: hidden;
+    margin-bottom: 50px;
+    animation: modalIn .35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-head {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-2);
+  }
+  .modal-head h2 {
+    font-family: var(--display);
+    font-size: 24px;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .modal-head .ref {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .modal-close {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+  }
+  .modal-close:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .modal-body {
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 32px;
+  }
+  .modal-section h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    margin-bottom: 18px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 24px;
+    margin-bottom: 30px;
+  }
+  .info-cell .info-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .info-cell .info-val {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink);
+    word-break: break-word;
+  }
+  .info-cell .info-val.mono {
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .info-cell .info-val.lg {
+    font-family: var(--display);
+    font-size: 18px;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+
+  .id-images {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .id-image-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .id-image-label {
+    padding: 10px 14px;
+    background: var(--bg-2);
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .id-image-label a {
+    color: var(--green);
+    text-decoration: none;
+    font-size: 9px;
+  }
+  .id-image-label a:hover { text-decoration: underline; }
+  .id-image-card img {
+    width: 100%;
+    display: block;
+    background: var(--bg-3);
+    max-height: 220px;
+    object-fit: contain;
+  }
+  .id-image-placeholder {
+    aspect-ratio: 16/10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    background: var(--bg-3);
+  }
+
+  .modal-foot {
+    padding: 24px 32px;
+    border-top: 1px solid var(--line);
+    background: var(--bg-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .modal-foot-left {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+  }
+  .modal-foot-right {
+    display: flex;
+    gap: 10px;
+  }
+
+  .reject-form {
+    grid-column: 1 / -1;
+    background: var(--bg);
+    border: 1px solid var(--red);
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+    display: none;
+  }
+  .reject-form.show { display: block; }
+  .reject-form label {
+    display: block;
+    font-family: var(--mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .reject-form textarea {
+    width: 100%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    border-radius: 3px;
+    resize: vertical;
+    min-height: 80px;
+    outline: none;
+  }
+  .reject-form textarea:focus {
+    border-color: var(--red);
+  }
+  .reject-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    justify-content: flex-end;
+  }
+
+  .review-history {
+    grid-column: 1 / -1;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-2);
+    margin-top: 20px;
+  }
+  .review-history strong {
+    color: var(--ink);
+  }
+
+  /* ═══════════ TOAST ═══════════ */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--panel);
+    border: 1px solid var(--green);
+    border-radius: 4px;
+    padding: 14px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    z-index: 300;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all .3s;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 360px;
+  }
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .toast.error {
+    border-color: var(--red);
+    box-shadow: 0 0 20px rgba(255, 56, 96, 0.2);
+  }
+  .toast .toast-icon {
+    color: var(--green);
+    flex-shrink: 0;
+  }
+  .toast.error .toast-icon { color: var(--red); }
+
+  /* ═══════════ LOADER ═══════════ */
+  .loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    gap: 12px;
+  }
+  .loader::before {
+    content: "";
+    width: 16px; height: 16px;
+    border: 2px solid var(--line);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ═══════════ RESPONSIVE ═══════════ */
+  @media (max-width: 1024px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .modal-body { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 720px) {
+    .topbar { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+    .topbar-left { gap: 14px; }
+    .top-tag { display: none; }
+    .main { padding: 24px 16px 60px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search { width: 100%; }
+    .filter-tabs { overflow-x: auto; }
+    .info-grid { grid-template-columns: 1fr; }
+    .modal-foot { flex-direction: column; align-items: stretch; }
+    .modal-foot-right { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="blink"></span>
+      BLOCKMEET<span class="accent">/26</span>
+    </div>
+    <div class="login-title">// ADMIN CONSOLE · v1.0</div>
+
+    <h2>SECURE LOGIN</h2>
+
+    <div class="field">
+      <label>EMAIL</label>
+      <input type="email" id="loginEmail" placeholder="admin@blockmeet.io" autocomplete="username"/>
+    </div>
+    <div class="field">
+      <label>PASSWORD</label>
+      <input type="password" id="loginPassword" placeholder="••••••••••••" autocomplete="current-password"/>
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+
+    <button class="btn btn-primary btn-full" id="loginBtn" onclick="doLogin()" style="margin-top: 12px;">
+      Authenticate
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M5 12h14M13 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <div class="login-hint">
+      Unauthorized access prohibited. All sessions are logged.
+      Contact <span style="color:var(--green)">support@blockmeet.io</span> for access.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DASHBOARD ═══════════ -->
+<div class="dash" id="dash">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="top-brand">
+        <span class="blink"></span>
+        BLOCKMEET<span class="accent">/26</span>
+      </div>
+      <div class="top-tag">ADMIN CONSOLE</div>
+    </div>
+    <div class="topbar-right">
+      <span>Signed in as <span class="user-email" id="userEmail">—</span></span>
+      <button class="btn btn-ghost" onclick="doLogout()">SIGN OUT</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats -->
+    <div class="stats" id="stats">
+      <div class="stat">
+        <div class="stat-label">TOTAL BOOKINGS
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7h18M3 12h18M3 17h18"/>
+          </svg>
+        </div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-sub">All time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">PENDING REVIEW
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 6v6l4 2"/>
+          </svg>
+        </div>
+        <div class="stat-val amber" id="statPending">—</div>
+        <div class="stat-sub">Awaiting your action</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">VERIFIED
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <path d="M22 4L12 14.01l-3-3"/>
+          </svg>
+        </div>
+        <div class="stat-val green" id="statVerified">—</div>
+        <div class="stat-sub">Approved attendees</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">REJECTED
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M15 9l-6 6M9 9l6 6"/>
+          </svg>
+        </div>
+        <div class="stat-val red" id="statRejected">—</div>
+        <div class="stat-sub">Failed verification</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="tab active" data-status="all">All <span class="count" id="cAll">0</span></button>
+        <button class="tab" data-status="pending_verification">Pending <span class="count" id="cPending">0</span></button>
+        <button class="tab" data-status="verified">Verified <span class="count" id="cVerified">0</span></button>
+        <button class="tab" data-status="rejected">Rejected <span class="count" id="cRejected">0</span></button>
+      </div>
+      <div class="toolbar-right">
+        <input class="search" id="searchInput" type="text" placeholder="Search name, email, ref…"/>
+        <button class="btn btn-secondary" onclick="exportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+          </svg>
+          Export CSV
+        </button>
+        <button class="btn btn-secondary" onclick="loadBookings()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 4v6h-6M1 20v-6h6"/>
+            <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+          </svg>
+          Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div id="tableContent">
+        <div class="loader">Loading bookings</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ DETAIL MODAL ═══════════ -->
+<div class="modal-overlay" id="detailModal" onclick="closeModalIfBg(event)">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ═══════════ TOAST ═══════════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   SUPABASE CLIENT — same project as the booking site
+   ════════════════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ════════════════════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════════════════════ */
+let state = {
+  user: null,
+  bookings: [],
+  filter: 'all',
+  searchQuery: '',
+  selectedBooking: null
+};
+
+/* ════════════════════════════════════════════════════════════
+   INIT — check existing session on load
+   ════════════════════════════════════════════════════════════ */
+(async function init() {
+  const { data } = await sb.auth.getSession();
+  if (data.session) {
+    state.user = data.session.user;
+    showDashboard();
+  }
+})();
+
+/* ════════════════════════════════════════════════════════════
+   AUTH
+   ════════════════════════════════════════════════════════════ */
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const errorEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  errorEl.classList.remove('show');
+
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter both email and password.';
+    errorEl.classList.add('show');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Authenticating...';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+
+    state.user = data.user;
+    showDashboard();
+  } catch (err) {
+    errorEl.textContent = 'Authentication failed: ' + (err.message || 'Invalid credentials');
+    errorEl.classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = `Authenticate <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
+  }
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  state.user = null;
+  document.getElementById('dash').classList.remove('show');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dash').classList.add('show');
+  document.getElementById('userEmail').textContent = state.user.email;
+  loadBookings();
+}
+
+// Press Enter to submit login
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+/* ════════════════════════════════════════════════════════════
+   LOAD + RENDER BOOKINGS
+   ════════════════════════════════════════════════════════════ */
+async function loadBookings() {
+  document.getElementById('tableContent').innerHTML = '<div class="loader">Loading bookings</div>';
+  try {
+    const { data, error } = await sb
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    state.bookings = data || [];
+    updateStats();
+    renderTable();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('tableContent').innerHTML =
+      `<div class="empty-state">Failed to load bookings.<br>${err.message}</div>`;
+    toast('Failed to load: ' + err.message, true);
+  }
+}
+
+function updateStats() {
+  const total = state.bookings.length;
+  const pending = state.bookings.filter(b => b.status === 'pending_verification').length;
+  const verified = state.bookings.filter(b => b.status === 'verified').length;
+  const rejected = state.bookings.filter(b => b.status === 'rejected').length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statPending').textContent = pending;
+  document.getElementById('statVerified').textContent = verified;
+  document.getElementById('statRejected').textContent = rejected;
+
+  document.getElementById('cAll').textContent = total;
+  document.getElementById('cPending').textContent = pending;
+  document.getElementById('cVerified').textContent = verified;
+  document.getElementById('cRejected').textContent = rejected;
+}
+
+function renderTable() {
+  const q = state.searchQuery.trim().toLowerCase();
+  let filtered = state.bookings;
+
+  if (state.filter !== 'all') {
+    filtered = filtered.filter(b => b.status === state.filter);
+  }
+
+  if (q) {
+    filtered = filtered.filter(b =>
+      (b.full_name || '').toLowerCase().includes(q) ||
+      (b.email || '').toLowerCase().includes(q) ||
+      (b.booking_ref || '').toLowerCase().includes(q) ||
+      (b.id_number || '').toLowerCase().includes(q) ||
+      (b.phone || '').toLowerCase().includes(q)
+    );
+  }
+
+  const tc = document.getElementById('tableContent');
+
+  if (filtered.length === 0) {
+    tc.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 21l-6-6M3 11a8 8 0 1116 0 8 8 0 01-16 0z"/>
+        </svg>
+        ${q ? 'No bookings match your search.' : 'No bookings in this category yet.'}
+      </div>
+    `;
+    return;
+  }
+
+  tc.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>BOOKING REF</th>
+          <th>ATTENDEE</th>
+          <th>ID</th>
+          <th>SEAT</th>
+          <th>BOOKED</th>
+          <th>STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${filtered.map(b => `
+          <tr onclick="openBooking('${b.id}')">
+            <td><span class="ref-cell">${b.booking_ref}</span></td>
+            <td class="name-cell">
+              <div class="nm-name">${escapeHtml(b.full_name)}</div>
+              <div class="nm-email">${escapeHtml(b.email)}</div>
+            </td>
+            <td class="id-cell">
+              <div class="id-type">${b.id_type}</div>
+              <div>${maskId(b.id_number)}</div>
+            </td>
+            <td class="ref-cell">${b.seat_number || '—'}</td>
+            <td class="date-cell">
+              ${formatDate(b.created_at)}
+              <div class="date-time">${formatTime(b.created_at)}</div>
+            </td>
+            <td>${statusPill(b.status)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function statusPill(status) {
+  if (status === 'verified') return '<span class="status-pill verified">Verified</span>';
+  if (status === 'rejected') return '<span class="status-pill rejected">Rejected</span>';
+  return '<span class="status-pill pending">Pending</span>';
+}
+
+function maskId(id) {
+  if (!id) return '—';
+  if (id.length <= 4) return id;
+  return id.substring(0, 2) + '••••••' + id.substring(id.length - 4);
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function formatTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+function escapeHtml(s) {
+  return String(s || '').replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+/* Filter tabs */
+document.getElementById('filterTabs').addEventListener('click', e => {
+  if (!e.target.matches('.tab') && !e.target.closest('.tab')) return;
+  const tab = e.target.closest('.tab');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  state.filter = tab.dataset.status;
+  renderTable();
+});
+
+/* Search */
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    state.searchQuery = e.target.value;
+    renderTable();
+  }, 200);
+});
+
+/* ════════════════════════════════════════════════════════════
+   DETAIL MODAL
+   ════════════════════════════════════════════════════════════ */
+async function openBooking(id) {
+  const b = state.bookings.find(x => x.id === id);
+  if (!b) return;
+  state.selectedBooking = b;
+
+  // Render modal first with placeholders, then load signed URLs
+  renderModal(b, null);
+
+  // Generate signed URLs for the private files (1hr expiry)
+  const urls = {};
+  for (const [key, path] of [['front', b.id_front_url], ['back', b.id_back_url], ['selfie', b.selfie_url]]) {
+    if (!path) continue;
+    try {
+      const { data, error } = await sb.storage
+        .from('id-documents')
+        .createSignedUrl(path, 3600);
+      if (!error) urls[key] = data.signedUrl;
+    } catch (err) {
+      console.warn('Could not load image:', key, err);
+    }
+  }
+  renderModal(b, urls);
+}
+
+function renderModal(b, urls) {
+  const dob = b.dob ? new Date(b.dob).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  const age = b.dob ? Math.floor((new Date() - new Date(b.dob)) / (1000 * 60 * 60 * 24 * 365.25)) : '—';
+  const reviewedAt = b.reviewed_at ? new Date(b.reviewed_at).toLocaleString('en-IN') : null;
+
+  const imageBlock = (label, url, key) => {
+    const inner = url
+      ? `<img src="${url}" alt="${label}"/>`
+      : `<div class="id-image-placeholder">${url === undefined ? 'Loading...' : 'Not uploaded'}</div>`;
+    return `
+      <div class="id-image-card">
+        <div class="id-image-label">
+          <span>${label}</span>
+          ${url ? `<a href="${url}" target="_blank">OPEN ↗</a>` : ''}
+        </div>
+        ${inner}
+      </div>
+    `;
+  };
+
+  const imagesUrls = urls || {};
+
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-head">
+      <div>
+        <h2>${escapeHtml(b.full_name)}</h2>
+        <div class="ref">${b.booking_ref} · Seat ${b.seat_number || '—'}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- LEFT: Attendee Info -->
+      <div class="modal-section">
+        <h3>// ATTENDEE INFORMATION</h3>
+        <div class="info-grid">
+          <div class="info-cell">
+            <div class="info-label">FULL NAME</div>
+            <div class="info-val">${escapeHtml(b.full_name)}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">DATE OF BIRTH</div>
+            <div class="info-val">${dob} <span style="color:var(--muted)">(${age})</span></div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">EMAIL</div>
+            <div class="info-val mono">${escapeHtml(b.email)}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">PHONE</div>
+            <div class="info-val mono">${escapeHtml(b.phone)}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">ID TYPE</div>
+            <div class="info-val lg">${b.id_type}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">ID NUMBER</div>
+            <div class="info-val mono">${escapeHtml(b.id_number)}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">PAYMENT METHOD</div>
+            <div class="info-val mono">${(b.payment_method || '').toUpperCase()}</div>
+          </div>
+          <div class="info-cell">
+            <div class="info-label">AMOUNT PAID</div>
+            <div class="info-val">₹${(b.amount || 0).toLocaleString('en-IN')}</div>
+          </div>
+          <div class="info-cell" style="grid-column: 1 / -1">
+            <div class="info-label">BOOKED ON</div>
+            <div class="info-val mono">${new Date(b.created_at).toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+
+        ${reviewedAt ? `
+          <div class="review-history">
+            <strong>REVIEW HISTORY</strong><br>
+            ${b.status === 'verified' ? '✓ Approved' : '✗ Rejected'} by <strong>${escapeHtml(b.reviewed_by || 'admin')}</strong>
+            on ${reviewedAt}
+            ${b.rejection_reason ? `<br><br>Reason: <em>${escapeHtml(b.rejection_reason)}</em>` : ''}
+          </div>
+        ` : ''}
+
+        <div class="reject-form" id="rejectForm">
+          <label>REJECTION REASON (visible to attendee)</label>
+          <textarea id="rejectReason" placeholder="e.g., ID image is blurry — please re-submit a clearer photo"></textarea>
+          <div class="reject-actions">
+            <button class="btn btn-ghost" onclick="document.getElementById('rejectForm').classList.remove('show')">Cancel</button>
+            <button class="btn btn-danger" onclick="confirmReject()">Confirm rejection</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: ID Images -->
+      <div class="modal-section">
+        <h3>// ID DOCUMENTS</h3>
+        <div class="id-images">
+          ${imageBlock('ID FRONT', imagesUrls.front, 'front')}
+          ${b.id_back_url ? imageBlock('ID BACK', imagesUrls.back, 'back') : ''}
+          ${imageBlock('SELFIE WITH ID', imagesUrls.selfie, 'selfie')}
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <div class="modal-foot-left">
+        Status: ${statusPill(b.status)}
+      </div>
+      <div class="modal-foot-right">
+        ${b.status === 'pending_verification' ? `
+          <button class="btn btn-danger" onclick="document.getElementById('rejectForm').classList.add('show')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            Reject
+          </button>
+          <button class="btn btn-success" onclick="approveBooking()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            Approve
+          </button>
+        ` : `
+          <button class="btn btn-secondary" onclick="resetStatus()">Reset to pending</button>
+        `}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.remove('show');
+  state.selectedBooking = null;
+}
+function closeModalIfBg(e) {
+  if (e.target.id === 'detailModal') closeModal();
+}
+
+/* ════════════════════════════════════════════════════════════
+   APPROVE / REJECT
+   ════════════════════════════════════════════════════════════ */
+async function approveBooking() {
+  if (!state.selectedBooking) return;
+  await updateStatus('verified', null);
+}
+
+async function confirmReject() {
+  const reason = document.getElementById('rejectReason').value.trim();
+  if (!reason) {
+    toast('Please provide a rejection reason', true);
+    return;
+  }
+  await updateStatus('rejected', reason);
+}
+
+async function resetStatus() {
+  await updateStatus('pending_verification', null);
+}
+
+async function updateStatus(newStatus, reason) {
+  const b = state.selectedBooking;
+  if (!b) return;
+  try {
+    const { error } = await sb
+      .from('bookings')
+      .update({
+        status: newStatus,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: state.user.email,
+        rejection_reason: reason
+      })
+      .eq('id', b.id);
+
+    if (error) throw error;
+
+    toast(`Booking ${newStatus === 'verified' ? 'approved' : newStatus === 'rejected' ? 'rejected' : 'reset'}`);
+    closeModal();
+    await loadBookings();
+  } catch (err) {
+    console.error(err);
+    toast('Update failed: ' + err.message, true);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CSV EXPORT
+   ════════════════════════════════════════════════════════════ */
+function exportCSV() {
+  if (state.bookings.length === 0) {
+    toast('No bookings to export', true);
+    return;
+  }
+
+  const headers = ['Booking Ref', 'Full Name', 'Email', 'Phone', 'DOB', 'Age', 'ID Type', 'ID Number', 'Seat', 'Status', 'Amount', 'Booked On', 'Reviewed On', 'Reviewed By'];
+
+  const rows = state.bookings.map(b => {
+    const age = b.dob ? Math.floor((new Date() - new Date(b.dob)) / (1000 * 60 * 60 * 24 * 365.25)) : '';
+    return [
+      b.booking_ref,
+      b.full_name,
+      b.email,
+      b.phone,
+      b.dob,
+      age,
+      b.id_type,
+      b.id_number,
+      b.seat_number || '',
+      b.status,
+      b.amount,
+      new Date(b.created_at).toLocaleString('en-IN'),
+      b.reviewed_at ? new Date(b.reviewed_at).toLocaleString('en-IN') : '',
+      b.reviewed_by || ''
+    ].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `blockmeet-bookings-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast(`Exported ${state.bookings.length} bookings`);
+}
+
+/* ════════════════════════════════════════════════════════════
+   TOAST
+   ════════════════════════════════════════════════════════════ */
+let toastTimer;
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.classList.toggle('error', isError);
+  t.innerHTML = `
+    <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      ${isError ? '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>' : '<path d="M20 6L9 17l-5-5"/>'}
+    </svg>
+    ${escapeHtml(msg)}
+  `;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* Close modal on Escape */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
