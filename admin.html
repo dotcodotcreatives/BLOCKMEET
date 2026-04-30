@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&family=Major+Mono+Display&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
   :root {
     --bg: #06080c;
@@ -1007,8 +1007,15 @@
    SUPABASE CLIENT — same project as the booking site
    ════════════════════════════════════════════════════════════ */
 const SUPABASE_URL = 'https://jlcaizklauxuobiizcpp.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_yYgNhdAT3DwHLx98VOX1Nw_7xsKGK0_';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpsY2FpemtsYXV4dW9iaWl6Y3BwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NDk0NDEsImV4cCI6MjA5MzEyNTQ0MX0.kaQT_-ARxV086tkdooRBXKyA-HSB9JOeqgFJpqEzImg';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  global: {
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + SUPABASE_ANON_KEY
+    }
+  }
+});
 
 /* ════════════════════════════════════════════════════════════
    STATE
